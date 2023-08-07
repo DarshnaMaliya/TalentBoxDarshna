@@ -64,8 +64,14 @@ const Signin = () => {
   //code for sign-in with google
   const responseGoogle = (response) => {
     console.log(response);
+    axios.post("http://localhost:5005/api/user/googlelogin", {
+    tokenID: response.tokenID})
+    .then(res => console.log(res))
   };
 
+  const responseFailureGoogle = (response) => {
+    console.log(response);
+  }
   return (
     <div>
       <form onSubmit={handleSubmit}>
@@ -87,7 +93,7 @@ const Signin = () => {
             clientId="599103622643-op2ci781ubcil6s1rmja1mmis6nge755.apps.googleusercontent.com"
             buttonText="Sign in with Google"
             onSuccess={responseGoogle}
-            onFailure={responseGoogle}
+            onFailure={responseFailureGoogle}
             cookiePolicy={'single_host_origin'}
           />
         </Box>

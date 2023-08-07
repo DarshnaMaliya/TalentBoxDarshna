@@ -1,6 +1,7 @@
 import UserLogin from "../models/userSchema.js";
 import bcrypt from "bcryptjs";
 import jwt from "jsonwebtoken";
+import { OAuth2Client } from "google-auth-library";
 
 const secretKey = 'darshna_secret';
 
@@ -92,5 +93,64 @@ export const signUp = async(req, res, next) => {
 //     } else {
 //     return res.status(200).json({message:"Successful Login", user:existingUser, token});
 // }
+
+const clientID = "599103622643-op2ci781ubcil6s1rmja1mmis6nge755.apps.googleusercontent.com";
+const client = new OAuth2Client(clientID);
+export const googleLogin = async(req, res, next) => {
+  const { idToken } = req.body;
+
+  client
+    .verifyIdToken({ idToken, audience: clientID })
+    .then((response) => {
+      const { email_verified, name, email } = response.payload;
+
+      if (email_verified) {
+        User.findOne({ email }).exec((err, user) => {
+          if (user) {
+            const token = jwt.sign({ _id: user._id }, secretKey, {
+              expiresIn: "7d"
+            });
+            const { _id, email, name } = user;
+            return res.json({
+              token,
+              user: { _id, email, name }
+            });
+          } else {
+            const password = email + secretKey;
+
+            user = new User({ name, email, password });
+            user
+              .save((err, data) => {
+                if (err) {
+                  return res.status(400).json({
+                    error: "User signup failed with google"
+                  });
+                }
+                const token = jwt.sign(
+                  { _id: data._id },
+                  secretKey,
+                  { expiresIn: "7d" }
+                );
+                const { _id, email, name } = data;
+
+                return res.json({
+                  token,
+                  user: { _id, email, name }
+                });
+              })
+              .catch((err) => {
+                return res.status(401).json({
+                  message: "signup error"
+                });
+              });
+          }
+        });
+      } else {
+        return res.status(400).json({
+          error: "Google login failed. Try again"
+        });
+      }
+});
+};
 
 export default getAllUser;
