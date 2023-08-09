@@ -97,6 +97,9 @@ export const signUp = async(req, res, next) => {
 const clientID = "599103622643-op2ci781ubcil6s1rmja1mmis6nge755.apps.googleusercontent.com";
 const client = new OAuth2Client(clientID);
 export const googleLogin = async(req, res, next) => {
+  res.setHeader('Access-Control-Allow-Origin', 'http://localhost:3000'); // Replace with your front-end URL
+  res.setHeader('Access-Control-Allow-Headers', 'Content-Type');
+  res.setHeader('Access-Control-Allow-Credentials', 'true'); // Allow credentials (cookies)
   const { idToken } = req.body;
 
   client
@@ -105,7 +108,7 @@ export const googleLogin = async(req, res, next) => {
       const { email_verified, name, email } = response.payload;
 
       if (email_verified) {
-        User.findOne({ email }).exec((err, user) => {
+        UserLogin.findOne({ email }).exec((err, user) => {
           if (user) {
             const token = jwt.sign({ _id: user._id }, secretKey, {
               expiresIn: "7d"
@@ -118,7 +121,7 @@ export const googleLogin = async(req, res, next) => {
           } else {
             const password = email + secretKey;
 
-            user = new User({ name, email, password });
+            user = new UserLogin({ name, email, password });
             user
               .save((err, data) => {
                 if (err) {

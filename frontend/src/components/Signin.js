@@ -1,10 +1,12 @@
 import { Button, TextField, Typography, Box } from "@mui/material";
 import React, { useEffect, useState } from "react";
 import axios from "axios";
-import { GoogleLogin } from 'react-google-login';
+//import { GoogleLogin, useGoogleLogin } from 'react-google-login';
 import { useDispatch } from "react-redux";
 import { loginActions } from "../store";
 import { useNavigate } from 'react-router-dom';
+import { GoogleLogin } from 'react-google-login';
+//import { GoogleLogin } from '@react-oauth/google';
 
 const Signin = () => {
   const navigate = useNavigate();
@@ -40,8 +42,8 @@ const Signin = () => {
     if (isSignUp) {
       sendRequest("signup")
         .then((data) => {
-          localStorage.setItem("uname", data.existingUser.name);
-          localStorage.setItem("userId", data.existingUser._id);
+          localStorage.setItem("uname", data.user.name);
+          localStorage.setItem("userId", data.user._id);
         }).then(() => dispatch(loginActions.login())).then(() => navigate("/courses"));
     } else {
       sendRequest()
@@ -61,16 +63,21 @@ const Signin = () => {
     }
   }, [])
 
+//   const login = useGoogleLogin({
+//     onSuccess: (codeResponse) => setUser(codeResponse),
+//     onError: (error) => console.log('Login Failed:', error)
+// });
+
   //code for sign-in with google
   const responseGoogle = (response) => {
-    console.log(response);
+    console.log("response is:" , response);
     axios.post("http://localhost:5005/api/user/googlelogin", {
-    tokenID: response.tokenID})
+    tokenID: response.auth})
     .then(res => console.log(res))
   };
 
   const responseFailureGoogle = (response) => {
-    console.log(response);
+    console.log("error" , response);
   }
   return (
     <div>
@@ -89,12 +96,23 @@ const Signin = () => {
           <Button color="warning" variant="contained" type="submit"> Submit</Button>
           <Button onClick={() => setIsSignup(!isSignUp)}>Change to {isSignUp ? "Login" : "Signup"}
           </Button>
-          <GoogleLogin
+         
+          {/* <GoogleLogin
+  onSuccess={credentialResponse => {
+    console.log(credentialResponse);
+  }}
+  onError={() => {
+    console.log('Login Failed');
+  }}
+  //useOneTap
+/> */}
+         <GoogleLogin
             clientId="599103622643-op2ci781ubcil6s1rmja1mmis6nge755.apps.googleusercontent.com"
             buttonText="Sign in with Google"
             onSuccess={responseGoogle}
             onFailure={responseFailureGoogle}
             cookiePolicy={'single_host_origin'}
+            //onClick={login}
           />
         </Box>
       </form>

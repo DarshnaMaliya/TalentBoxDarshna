@@ -6,7 +6,7 @@ const router = express.Router();
 
 router.get("/", getAllUser);
 router.post("/signup", signUp);
-router.post("/login", verifyToken, login);
+router.post("/login", login);
 router.post("/googlelogin", googleLogin);
 
 export default router;
